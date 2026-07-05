@@ -1,0 +1,42 @@
+name: quality check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: quality-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .config/.nvmrc
+          cache: pnpm
+
+      # --frozen-lockfile fails the build if pnpm-lock.yaml would change,
+      # so CI can never silently pull a different (or malicious) version than
+      # what was reviewed. Combined with the supply-chain settings in
+      # pnpm-workspace.yaml, this is the core install-time defense.
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Format
+        run: pnpm fmt:check
+
+      - name: Lint
+        run: pnpm lint:check
+
+      - name: Typecheck
+        run: pnpm typecheck

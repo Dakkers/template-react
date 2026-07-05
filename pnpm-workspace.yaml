@@ -1,0 +1,35 @@
+# Supply-chain security hardening — see https://pnpm.io/supply-chain-security
+
+# Save exact versions (no `^`/`~` range prefix) when adding dependencies, so
+# the manifest pins the precise version that was resolved and installed.
+savePrefix: ""
+
+# Block risky postinstall scripts: only these explicitly-trusted dependencies
+# may run build/postinstall scripts. Everything else is blocked by default.
+# Add packages here ONLY after reviewing why they need a build step.
+allowBuilds:
+  esbuild: true
+
+# Prevent transitive dependencies from being resolved from exotic sources
+# (git repos, direct tarball URLs) instead of the registry.
+blockExoticSubdeps: true
+
+# Delay installing newly published versions until they are at least this many
+# minutes old (1 day), giving time for malicious releases to be detected.
+# This is the pnpm v11 default, set explicitly to document intent.
+minimumReleaseAge: 1440
+
+# Refuse to install a package whose trust level has decreased compared to
+# previous releases (e.g. lost publisher provenance).
+trustPolicy: no-downgrade
+
+# Packages exempted from the trust-downgrade check. Only add an entry here with
+# a comment explaining WHY the downgrade is acceptable (e.g. an old transitive
+# release re-published without provenance that is already in your lockfile).
+# trustPolicyExclude:
+#   - "example-pkg@1.2.3"
+
+# Force specific versions across the whole dependency tree (including transitive
+# deps). Use to escape known-bad or provenance-less releases. Document each one.
+# overrides:
+#   some-transitive-dep: ^1.2.3
